@@ -1,3 +1,8 @@
+// for å compile koden til en exe fil, bruk følgende kommando:
+// csc /out:FrontendDevSetup.exe Program.cs
+
+// code is chatGPT generated.
+
 using System;
 using System.Diagnostics;
 
@@ -12,18 +17,42 @@ class Program
             return;
         }
 
-        // Install Visual Studio Code
-        ExecuteCommand("curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-archive-keyring.gpg");
-        ExecuteCommand("echo \"deb [signed-by=/usr/share/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/repos/code stable main\" | tee /etc/apt/sources.list.d/vscode.list");
-        ExecuteCommand("apt-get update");
-        ExecuteCommand("apt-get install code");
+        // Check if Visual Studio Code is already installed
+        if (!IsProgramInstalled("code"))
+        {
+            // Install Visual Studio Code
+            ExecuteCommand("curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-archive-keyring.gpg");
+            ExecuteCommand("echo \"deb [signed-by=/usr/share/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/repos/code stable main\" | tee /etc/apt/sources.list.d/vscode.list");
+            ExecuteCommand("apt-get update");
+            ExecuteCommand("apt-get install code");
+        }
+        else
+        {
+            Console.WriteLine("Visual Studio Code is already installed.");
+        }
 
-        // Install Git
-        ExecuteCommand("apt-get install git");
+        // Check if Git is already installed
+        if (!IsProgramInstalled("git"))
+        {
+            // Install Git
+            ExecuteCommand("apt-get install git");
+        }
+        else
+        {
+            Console.WriteLine("Git is already installed.");
+        }
 
-        // Install Node.js LTS and npm
-        ExecuteCommand("curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -");
-        ExecuteCommand("apt-get install -y nodejs");
+        // Check if Node.js is already installed
+        if (!IsProgramInstalled("node"))
+        {
+            // Install Node.js LTS and npm
+            ExecuteCommand("curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -");
+            ExecuteCommand("apt-get install -y nodejs");
+        }
+        else
+        {
+            Console.WriteLine("Node.js is already installed.");
+        }
 
         // Prompt for user name
         Console.Write("Enter your Git user name: ");
@@ -54,6 +83,26 @@ class Program
             string output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
             return output.Trim() == "root";
+        }
+    }
+
+    static bool IsProgramInstalled(string programName)
+    {
+        using (Process process = new Process())
+        {
+            process.StartInfo = new ProcessStartInfo
+            {
+                FileName = "which",
+                Arguments = programName,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+
+            process.Start();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            return !string.IsNullOrEmpty(output) && output.Trim() != "";
         }
     }
 
